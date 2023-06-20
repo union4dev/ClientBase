@@ -74,16 +74,12 @@ public class JsonBlendingMode
 
     public boolean equals(Object obj)
     {
-        if (this == obj)
-        {
+        if (this == obj) {
             return true;
-        }
-        else if (!(obj instanceof JsonBlendingMode jsonblendingmode))
-        {
+        } else if (!(obj instanceof JsonBlendingMode)) {
             return false;
-        }
-        else
-        {
+        } else {
+            JsonBlendingMode jsonblendingmode = (JsonBlendingMode) obj;
             return this.field_148112_f == jsonblendingmode.field_148112_f && (this.field_148115_e == jsonblendingmode.field_148115_e && (this.field_148114_d == jsonblendingmode.field_148114_d && (this.field_148119_h == jsonblendingmode.field_148119_h && (this.field_148113_g == jsonblendingmode.field_148113_g && (this.field_148117_c == jsonblendingmode.field_148117_c && this.field_148116_b == jsonblendingmode.field_148116_b)))));
         }
     }

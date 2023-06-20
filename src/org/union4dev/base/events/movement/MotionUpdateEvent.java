@@ -1,9 +1,8 @@
-package cc.novoline.events.events.impl;
+package org.union4dev.base.events.movement;
 
-import cc.novoline.events.events.callables.EventCancellable;
-import cc.novoline.utils.data.Position;
+import org.union4dev.base.events.base.Event;
 
-public class MotionUpdateEvent extends EventCancellable {
+public class MotionUpdateEvent extends Event.EventCancellable {
 
     private float yaw, pitch;
     private double x, y, z;
@@ -56,12 +55,6 @@ public class MotionUpdateEvent extends EventCancellable {
 
     public void setZ(double z) {
         this.z = z;
-    }
-
-    public void setPosition(Position position) {
-        x = position.getX();
-        y = position.getY();
-        z = position.getZ();
     }
 
     public boolean isOnGround() {

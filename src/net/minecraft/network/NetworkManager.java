@@ -3,16 +3,7 @@ package net.minecraft.network;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelException;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelFutureListener;
-import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollSocketChannel;
@@ -27,27 +18,22 @@ import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.Future;
 import io.netty.util.concurrent.GenericFutureListener;
-import java.net.InetAddress;
-import java.net.SocketAddress;
-import java.util.Queue;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import javax.crypto.SecretKey;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.CryptManager;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.LazyLoadBase;
-import net.minecraft.util.MessageDeserializer;
-import net.minecraft.util.MessageDeserializer2;
-import net.minecraft.util.MessageSerializer;
-import net.minecraft.util.MessageSerializer2;
+import net.minecraft.util.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.Validate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.network.PacketReceiveEvent;
+import org.union4dev.base.events.network.PacketSendEvent;
+
+import javax.crypto.SecretKey;
+import java.net.InetAddress;
+import java.net.SocketAddress;
+import java.util.Queue;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class NetworkManager extends SimpleChannelInboundHandler<Packet>
 {
@@ -146,16 +132,15 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet>
         this.closeChannel(chatcomponenttranslation);
     }
 
-    protected void channelRead0(ChannelHandlerContext p_channelRead0_1_, Packet p_channelRead0_2_) throws Exception
-    {
-        if (this.channel.isOpen())
-        {
-            try
-            {
+    protected void channelRead0(ChannelHandlerContext p_channelRead0_1_, Packet p_channelRead0_2_) throws Exception {
+        PacketReceiveEvent event = new PacketReceiveEvent(p_channelRead0_2_);
+        EventManager.call(event);
+        if (event.isCancelled())
+            return;
+        if (this.channel.isOpen()) {
+            try {
                 p_channelRead0_2_.processPacket(this.packetListener);
-            }
-            catch (ThreadQuickExitException var4)
-            {
+            } catch (ThreadQuickExitException var4) {
                 ;
             }
         }
@@ -172,15 +157,16 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet>
         this.packetListener = handler;
     }
 
-    public void sendPacket(Packet packetIn)
-    {
-        if (this.isChannelOpen())
-        {
+    public void sendPacket(Packet packetIn) {
+        PacketSendEvent event = new PacketSendEvent(packetIn);
+        EventManager.call(event);
+        if (event.isCancelled())
+            return;
+
+        if (this.isChannelOpen()) {
             this.flushOutboundQueue();
-            this.dispatchPacket(packetIn, (GenericFutureListener <? extends Future <? super Void >> [])null);
-        }
-        else
-        {
+            this.dispatchPacket(packetIn, (GenericFutureListener<? extends Future<? super Void>>[]) null);
+        } else {
             this.readWriteLock.writeLock().lock();
 
             try

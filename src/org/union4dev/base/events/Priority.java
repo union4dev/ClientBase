@@ -1,4 +1,4 @@
-package com.darkmagician6.eventapi;
+package org.union4dev.base.events;
 
 /**
  * The priority for the dispatcher to determine what method should be invoked

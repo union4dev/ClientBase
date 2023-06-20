@@ -2,6 +2,7 @@ package net.minecraft.client.renderer.entity;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.model.ModelBiped;
 import net.minecraft.client.renderer.GlStateManager;
@@ -15,15 +16,13 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.src.Config;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.optifine.entity.model.IEntityRenderer;
 import net.optifine.shaders.Shaders;
 import org.lwjgl.opengl.GL11;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.render.RenderNameTagEvent;
 
 public abstract class Render<T extends Entity> implements IEntityRenderer
 {
@@ -359,17 +358,24 @@ public abstract class Render<T extends Entity> implements IEntityRenderer
     /**
      * Renders an entity's name above its head
      */
-    protected void renderLivingLabel(T entityIn, String str, double x, double y, double z, int maxDistance)
-    {
+    protected void renderLivingLabel(T entityIn, String str, double x, double y, double z, int maxDistance) {
+
+        if (entityIn instanceof EntityOtherPlayerMP) {
+            RenderNameTagEvent e = new RenderNameTagEvent(str);
+            EventManager.call(e);
+            if (e.isCancelled())
+                return;
+            str = e.getString();
+        }
+
         double d0 = entityIn.getDistanceSqToEntity(this.renderManager.livingPlayer);
 
-        if (d0 <= (double)(maxDistance * maxDistance))
-        {
+        if (d0 <= (double) (maxDistance * maxDistance)) {
             FontRenderer fontrenderer = this.getFontRendererFromRenderManager();
             float f = 1.6F;
             float f1 = 0.016666668F * f;
             GlStateManager.pushMatrix();
-            GlStateManager.translate((float)x + 0.0F, (float)y + entityIn.height + 0.5F, (float)z);
+            GlStateManager.translate((float) x + 0.0F, (float) y + entityIn.height + 0.5F, (float) z);
             GL11.glNormal3f(0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(-this.renderManager.playerViewY, 0.0F, 1.0F, 0.0F);
             GlStateManager.rotate(this.renderManager.playerViewX, 1.0F, 0.0F, 0.0F);

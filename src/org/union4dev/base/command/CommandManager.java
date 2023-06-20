@@ -1,79 +1,105 @@
-package client.manager.managers;
+package org.union4dev.base.command;
+
+import org.union4dev.base.command.commands.BindCommand;
+import org.union4dev.base.command.commands.ToggleCommand;
+import org.union4dev.base.util.ChatUtil;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import client.Client;
-import client.command.Command;
-import client.command.commands.BindCommand;
-import client.command.commands.HelpCommand;
-import client.manager.Manager;
 
-public class CommandManager extends Manager{
+/**
+ * CommandManager, a custom command for managing clients, start with -
+ *
+ * @author cubk
+ */
+public class CommandManager {
 
-	private HashMap<String[], Command> commands;
+    /**
+     * Command Prefix, you can edit it
+     */
+    private static final String prefix = "-";
+    /**
+     * Command map
+     */
+    private final HashMap<String[], Command> commands = new HashMap<>();
 
-	private String prefix;
+    /**
+     * Register commands
+     */
+    public CommandManager() {
+        register(new ToggleCommand(), "t", "toggle");
+        register(new BindCommand(), "bind");
+    }
 
-	public CommandManager() {
-		super(1);
-		commands = new HashMap();
-		prefix = "-";
-	}
+    /**
+     * Register Command
+     *
+     * @param instance Command Instance
+     * @param name     Name (and alias)
+     */
+    private void register(Command instance, String... name) {
+        commands.put(name, instance);
+    }
 
-	@Override
-	public void load() {
-		commands.put(new String[] { "help", "h" }, new HelpCommand());
-		commands.put(new String[] { "bind", "b" }, new BindCommand());
+    /**
+     * Process Command form chat
+     *
+     * @param rawMessage Message
+     * @return Cancelled
+     */
+    public boolean processCommand(String rawMessage) {
+        if (!rawMessage.startsWith(prefix)) {
+            return false;
+        }
 
-		loadEnd();
-	}
+        boolean safe = rawMessage.split(prefix).length > 1;
 
-	public boolean processCommand(String rawMessage) {
-		if (!rawMessage.startsWith(prefix)) {
-			return false;
-		}
+        if (safe) {
+            String beheaded = rawMessage.split(prefix)[1];
 
-		boolean safe = rawMessage.split(prefix).length > 1;
+            String[] args = beheaded.split(" ");
 
-		if (safe) {
-			String beheaded = rawMessage.split(prefix)[1];
+            Command command = getCommand(args[0]);
 
-			String[] args = beheaded.split(" ");
+            if (command != null) {
+                command.run(args);
+            } else {
+                ChatUtil.info("Try -help.");
+            }
+        } else {
+            ChatUtil.info("Try -help.");
+        }
 
-			Command command = getCommand(args[0]);
+        return true;
+    }
 
-			if (command != null) {
-				if (!command.run(args)) {
-					Client.getClient().tellPlayer(command.usage());
-				}
-			}
-			else {
-				Client.getClient().tellPlayer("Try -help.");
-			}
-		}
-		else {
-			Client.getClient().tellPlayer("Try -help.");
-		}
+    /**
+     * Get command instance
+     *
+     * @param name Command name or alias
+     * @return {@link Command}
+     */
+    private Command getCommand(String name) {
+        for (Map.Entry<String[], Command> entry : commands.entrySet()) {
+            String[] key = entry.getKey();
+            for (String s : key) {
+                if (s.equalsIgnoreCase(name)) {
+                    return entry.getValue();
+                }
+            }
 
-		return true;
-	}
+        }
+        return null;
+    }
 
-	private Command getCommand(String name) {
-		for (Map.Entry entry : commands.entrySet()) {
-			String[] key = (String[]) entry.getKey();
-			for (String s : key) {
-				if (s.equalsIgnoreCase(name)) {
-					return (Command) entry.getValue();
-				}
-			}
-
-		}
-		return null;
-	}
-
-	public HashMap<String[], Command> getCommands() {
-		return commands;
-	}
+    /**
+     * Get command map
+     *
+     * @return {@link HashMap}<{@link String[]}, {@link Command}>
+     */
+    public HashMap<String[], Command> getCommands() {
+        return commands;
+    }
 
 }

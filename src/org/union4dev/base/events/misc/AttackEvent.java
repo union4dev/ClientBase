@@ -1,9 +1,9 @@
-package cc.stylesclient.events.events.impl;
+package org.union4dev.base.events.misc;
 
-import cc.stylesclient.events.events.callables.EventCancellable;
 import net.minecraft.entity.Entity;
+import org.union4dev.base.events.base.Event;
 
-public class AttackEvent extends EventCancellable {
+public class AttackEvent extends Event.EventCancellable {
     private final Entity target;
     private final boolean isPre;
 

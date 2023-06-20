@@ -1,3 +1,6 @@
 package org.union4dev.base.events.update;
-public class UpdateEvent {
+
+import org.union4dev.base.events.base.Event;
+
+public class UpdateEvent implements Event {
 }

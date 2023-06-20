@@ -1,32 +1,28 @@
-package client.command.commands;
+package org.union4dev.base.command.commands;
 
 import org.lwjgl.input.Keyboard;
+import org.union4dev.base.Access;
+import org.union4dev.base.command.Command;
+import org.union4dev.base.util.ChatUtil;
 
-import client.command.Command;
-import client.manager.managers.ModuleManager;
-import client.module.Empty;
-import client.module.Module;
-
-public class BindCommand implements Command {
+public class BindCommand implements Command, Access.InstanceAccess {
 
 	@Override
-	public boolean run(String[] args) {
+	public void run(String[] args) {
 		if (args.length == 3) {
-			Module m = client.getManagers().getManager(ModuleManager.class).getModule(args[1]);
-			if (!(m instanceof Empty)) {
-				m.setKeyCode(Keyboard.getKeyIndex(args[2].toUpperCase()));
-				client.tellPlayer(m.getName() + " has been bound to " + args[2] + ".");
+			Class<?> module = access.getModuleManager().getModuleClass(args[1]);
+			if (module != null) {
+				access.getModuleManager().setKey(module, Keyboard.getKeyIndex(args[2].toUpperCase()));
+				ChatUtil.info(access.getModuleManager().getName(module) + " has been bound to " + args[2] + ".");
 			} else {
-				client.tellPlayer(args[1] + " not found.");
+				ChatUtil.info(args[1] + " not found.");
 			}
-			return true;
 		}
-		return false;
 	}
 
 	@Override
 	public String usage() {
-		return "USAGE: -bind [module] [key]";
+		return "bind <module> <key>";
 	}
 
 }

@@ -1,16 +1,9 @@
-package cn.enaium.foxbase.client.module.modules.render;
+package org.union4dev.base.module.render;
 
-import cn.enaium.cf4m.annotation.module.Disable;
-import cn.enaium.cf4m.annotation.module.Enable;
-import cn.enaium.cf4m.annotation.module.Module;
 import net.minecraft.client.Minecraft;
+import org.union4dev.base.annotations.module.Disable;
+import org.union4dev.base.annotations.module.Enable;
 
-/**
- * Project: FoxBase
- * -----------------------------------------------------------
- * Copyright © 2020 | Enaium | All rights reserved.
- */
-@Module("FullBright")
 public class FullBright {
 
     @Enable

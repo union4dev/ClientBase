@@ -1,10 +1,6 @@
 package net.minecraft.client;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
-import com.google.common.collect.Sets;
+import com.google.common.collect.*;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListenableFutureTask;
@@ -12,45 +8,12 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.properties.PropertyMap;
 import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Proxy;
-import java.net.SocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
-import javax.imageio.ImageIO;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.audio.MusicTicker;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiControls;
-import net.minecraft.client.gui.GuiGameOver;
-import net.minecraft.client.gui.GuiIngame;
-import net.minecraft.client.gui.GuiIngameMenu;
-import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.client.gui.GuiMemoryErrorScreen;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiSleepMP;
-import net.minecraft.client.gui.GuiYesNo;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.achievement.GuiAchievement;
 import net.minecraft.client.gui.inventory.GuiInventory;
 import net.minecraft.client.gui.stream.GuiStreamUnavailable;
@@ -62,14 +25,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.client.network.NetHandlerLoginClient;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.client.particle.EffectRenderer;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.EntityRenderer;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.ItemRenderer;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -77,29 +33,8 @@ import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.resources.DefaultResourcePack;
-import net.minecraft.client.resources.FoliageColorReloadListener;
-import net.minecraft.client.resources.GrassColorReloadListener;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.resources.IReloadableResourceManager;
-import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResourcePack;
-import net.minecraft.client.resources.LanguageManager;
-import net.minecraft.client.resources.ResourceIndex;
-import net.minecraft.client.resources.ResourcePackRepository;
-import net.minecraft.client.resources.SimpleReloadableResourceManager;
-import net.minecraft.client.resources.SkinManager;
-import net.minecraft.client.resources.data.AnimationMetadataSection;
-import net.minecraft.client.resources.data.AnimationMetadataSectionSerializer;
-import net.minecraft.client.resources.data.FontMetadataSection;
-import net.minecraft.client.resources.data.FontMetadataSectionSerializer;
-import net.minecraft.client.resources.data.IMetadataSerializer;
-import net.minecraft.client.resources.data.LanguageMetadataSection;
-import net.minecraft.client.resources.data.LanguageMetadataSectionSerializer;
-import net.minecraft.client.resources.data.PackMetadataSection;
-import net.minecraft.client.resources.data.PackMetadataSectionSerializer;
-import net.minecraft.client.resources.data.TextureMetadataSection;
-import net.minecraft.client.resources.data.TextureMetadataSectionSerializer;
+import net.minecraft.client.resources.*;
+import net.minecraft.client.resources.data.*;
 import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
@@ -113,11 +48,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLeashKnot;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.boss.BossStatus;
-import net.minecraft.entity.item.EntityArmorStand;
-import net.minecraft.entity.item.EntityBoat;
-import net.minecraft.entity.item.EntityItemFrame;
-import net.minecraft.entity.item.EntityMinecart;
-import net.minecraft.entity.item.EntityPainting;
+import net.minecraft.entity.item.*;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Bootstrap;
@@ -141,21 +72,9 @@ import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.stats.AchievementList;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.FrameTimer;
-import net.minecraft.util.IThreadListener;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MinecraftError;
-import net.minecraft.util.MouseHelper;
-import net.minecraft.util.MovementInputFromOptions;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ReportedException;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.ScreenShotHelper;
-import net.minecraft.util.Session;
 import net.minecraft.util.Timer;
 import net.minecraft.util.Util;
+import net.minecraft.util.*;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.WorldProviderEnd;
 import net.minecraft.world.WorldProviderHell;
@@ -172,15 +91,29 @@ import org.lwjgl.LWJGLException;
 import org.lwjgl.Sys;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.ContextCapabilities;
-import org.lwjgl.opengl.Display;
-import org.lwjgl.opengl.DisplayMode;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GLContext;
-import org.lwjgl.opengl.OpenGLException;
-import org.lwjgl.opengl.PixelFormat;
+import org.lwjgl.opengl.*;
 import org.lwjgl.util.glu.GLU;
+import org.union4dev.base.Access;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.misc.KeyInputEvent;
+import org.union4dev.base.events.misc.MiddleClickEvent;
+import org.union4dev.base.events.update.TickEvent;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Proxy;
+import java.net.SocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 
 public class Minecraft implements IThreadListener, IPlayerUsage
 {
@@ -574,15 +507,14 @@ public class Minecraft implements IThreadListener, IPlayerUsage
             this.toggleFullscreen();
         }
 
-        try
-        {
+        try {
             Display.setVSyncEnabled(this.gameSettings.enableVsync);
-        }
-        catch (OpenGLException var2)
-        {
+        } catch (OpenGLException var2) {
             this.gameSettings.enableVsync = false;
             this.gameSettings.saveOptions();
         }
+
+        new Access();
 
         this.renderGlobal.makeEntityOutlineShader();
     }
@@ -1551,15 +1483,18 @@ public class Minecraft implements IThreadListener, IPlayerUsage
             else
             {
                 switch (this.objectMouseOver.typeOfHit) {
-                    case ENTITY -> {
+                    case ENTITY:
                         if (this.playerController.isPlayerRightClickingOnEntity(this.thePlayer, this.objectMouseOver.entityHit, this.objectMouseOver)) {
                             flag = false;
                         } else if (this.playerController.interactWithEntitySendPacket(this.thePlayer, this.objectMouseOver.entityHit)) {
                             flag = false;
                         }
-                    }
-                    case BLOCK -> {
+
+                        break;
+
+                    case BLOCK:
                         BlockPos blockpos = this.objectMouseOver.getBlockPos();
+
                         if (this.theWorld.getBlockState(blockpos).getBlock().getMaterial() != Material.air) {
                             int i = itemstack != null ? itemstack.stackSize : 0;
 
@@ -1578,7 +1513,6 @@ public class Minecraft implements IThreadListener, IPlayerUsage
                                 this.entityRenderer.itemRenderer.resetEquippedProgress();
                             }
                         }
-                    }
                 }
             }
 
@@ -1695,17 +1629,16 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     /**
      * Runs the current tick.
      */
-    public void runTick() throws IOException
-    {
-        if (this.rightClickDelayTimer > 0)
-        {
+    public void runTick() throws IOException {
+        EventManager.call(new TickEvent());
+
+        if (this.rightClickDelayTimer > 0) {
             --this.rightClickDelayTimer;
         }
 
         this.mcProfiler.startSection("gui");
 
-        if (!this.isGamePaused)
-        {
+        if (!this.isGamePaused) {
             this.ingameGUI.updateTick();
         }
 
@@ -1874,21 +1807,18 @@ public class Minecraft implements IThreadListener, IPlayerUsage
 
                 this.dispatchKeypresses();
 
-                if (Keyboard.getEventKeyState())
-                {
-                    if (k == 62 && this.entityRenderer != null)
-                    {
+                if (Keyboard.getEventKeyState()) {
+                    if (k == 62 && this.entityRenderer != null) {
                         this.entityRenderer.switchUseShader();
                     }
 
-                    if (this.currentScreen != null)
-                    {
+                    KeyInputEvent event = new KeyInputEvent(k);
+                    EventManager.call(event);
+
+                    if (this.currentScreen != null) {
                         this.currentScreen.handleKeyboardInput();
-                    }
-                    else
-                    {
-                        if (k == 1)
-                        {
+                    } else {
+                        if (k == 1) {
                             this.displayInGameMenu();
                         }
 
@@ -2432,10 +2362,10 @@ public class Minecraft implements IThreadListener, IPlayerUsage
     /**
      * Called when user clicked he's mouse middle button (pick block)
      */
-    private void middleClickMouse()
-    {
-        if (this.objectMouseOver != null)
-        {
+    private void middleClickMouse() {
+        EventManager.call(new MiddleClickEvent(objectMouseOver));
+
+        if (this.objectMouseOver != null) {
             boolean flag = this.thePlayer.capabilities.isCreativeMode;
             int i = 0;
             boolean flag1 = false;
@@ -2479,36 +2409,46 @@ public class Minecraft implements IThreadListener, IPlayerUsage
                 {
                     item = Items.painting;
                 }
-                else if (this.objectMouseOver.entityHit instanceof EntityLeashKnot)
-                {
+                else if (this.objectMouseOver.entityHit instanceof EntityLeashKnot) {
                     item = Items.lead;
-                }
-                else if (this.objectMouseOver.entityHit instanceof EntityItemFrame entityitemframe)
-                {
+                } else if (this.objectMouseOver.entityHit instanceof EntityItemFrame) {
+                    EntityItemFrame entityitemframe = (EntityItemFrame) this.objectMouseOver.entityHit;
                     ItemStack itemstack = entityitemframe.getDisplayedItem();
 
-                    if (itemstack == null)
-                    {
+                    if (itemstack == null) {
                         item = Items.item_frame;
-                    }
-                    else
-                    {
+                    } else {
                         item = itemstack.getItem();
                         i = itemstack.getMetadata();
                         flag1 = true;
                     }
-                }
-                else if (this.objectMouseOver.entityHit instanceof EntityMinecart entityminecart)
-                {
+                } else if (this.objectMouseOver.entityHit instanceof EntityMinecart) {
+                    EntityMinecart entityminecart = (EntityMinecart) this.objectMouseOver.entityHit;
 
-                    item = switch (entityminecart.getMinecartType()) {
-                        case FURNACE -> Items.furnace_minecart;
-                        case CHEST -> Items.chest_minecart;
-                        case TNT -> Items.tnt_minecart;
-                        case HOPPER -> Items.hopper_minecart;
-                        case COMMAND_BLOCK -> Items.command_block_minecart;
-                        default -> Items.minecart;
-                    };
+                    switch (entityminecart.getMinecartType()) {
+                        case FURNACE:
+                            item = Items.furnace_minecart;
+                            break;
+
+                        case CHEST:
+                            item = Items.chest_minecart;
+                            break;
+
+                        case TNT:
+                            item = Items.tnt_minecart;
+                            break;
+
+                        case HOPPER:
+                            item = Items.hopper_minecart;
+                            break;
+
+                        case COMMAND_BLOCK:
+                            item = Items.command_block_minecart;
+                            break;
+
+                        default:
+                            item = Items.minecart;
+                    }
                 }
                 else if (this.objectMouseOver.entityHit instanceof EntityBoat)
                 {

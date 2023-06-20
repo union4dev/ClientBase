@@ -1,3 +1,6 @@
 package org.union4dev.base.events.movement;
-public class SlowdownEvent {
+
+import org.union4dev.base.events.base.Event;
+
+public class SlowdownEvent extends Event.EventCancellable {
 }

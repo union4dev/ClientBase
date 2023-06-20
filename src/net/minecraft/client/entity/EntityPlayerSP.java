@@ -3,21 +3,8 @@ package net.minecraft.client.entity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.MovingSoundMinecartRiding;
 import net.minecraft.client.audio.PositionedSoundRecord;
-import net.minecraft.client.gui.GuiCommandBlock;
-import net.minecraft.client.gui.GuiEnchantment;
-import net.minecraft.client.gui.GuiHopper;
-import net.minecraft.client.gui.GuiMerchant;
-import net.minecraft.client.gui.GuiRepair;
-import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiScreenBook;
-import net.minecraft.client.gui.inventory.GuiBeacon;
-import net.minecraft.client.gui.inventory.GuiBrewingStand;
-import net.minecraft.client.gui.inventory.GuiChest;
-import net.minecraft.client.gui.inventory.GuiCrafting;
-import net.minecraft.client.gui.inventory.GuiDispenser;
-import net.minecraft.client.gui.inventory.GuiEditSign;
-import net.minecraft.client.gui.inventory.GuiFurnace;
-import net.minecraft.client.gui.inventory.GuiScreenHorseInventory;
+import net.minecraft.client.gui.*;
+import net.minecraft.client.gui.inventory.*;
 import net.minecraft.client.network.NetHandlerPlayClient;
 import net.minecraft.command.server.CommandBlockLogic;
 import net.minecraft.entity.Entity;
@@ -29,28 +16,19 @@ import net.minecraft.init.Items;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.client.C01PacketChatMessage;
-import net.minecraft.network.play.client.C03PacketPlayer;
-import net.minecraft.network.play.client.C07PacketPlayerDigging;
-import net.minecraft.network.play.client.C0APacketAnimation;
-import net.minecraft.network.play.client.C0BPacketEntityAction;
-import net.minecraft.network.play.client.C0CPacketInput;
-import net.minecraft.network.play.client.C0DPacketCloseWindow;
-import net.minecraft.network.play.client.C13PacketPlayerAbilities;
-import net.minecraft.network.play.client.C16PacketClientStatus;
+import net.minecraft.network.play.client.*;
 import net.minecraft.potion.Potion;
 import net.minecraft.stats.StatBase;
 import net.minecraft.stats.StatFileWriter;
 import net.minecraft.tileentity.TileEntitySign;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.IChatComponent;
-import net.minecraft.util.MovementInput;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.world.IInteractionObject;
 import net.minecraft.world.World;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.movement.MotionUpdateEvent;
+import org.union4dev.base.events.movement.MoveEvent;
+import org.union4dev.base.events.movement.SlowdownEvent;
+import org.union4dev.base.events.update.UpdateEvent;
 
 public class EntityPlayerSP extends AbstractClientPlayer
 {
@@ -167,6 +145,7 @@ public class EntityPlayerSP extends AbstractClientPlayer
      */
     public void onUpdate()
     {
+        EventManager.call(new UpdateEvent());
         if (this.worldObj.isBlockLoaded(new BlockPos(this.posX, 0.0D, this.posZ)))
         {
             super.onUpdate();
@@ -175,29 +154,31 @@ public class EntityPlayerSP extends AbstractClientPlayer
             {
                 this.sendQueue.addToSendQueue(new C03PacketPlayer.C05PacketPlayerLook(this.rotationYaw, this.rotationPitch, this.onGround));
                 this.sendQueue.addToSendQueue(new C0CPacketInput(this.moveStrafing, this.moveForward, this.movementInput.jump, this.movementInput.sneak));
-            }
-            else
-            {
+            } else {
                 this.onUpdateWalkingPlayer();
             }
         }
     }
 
+    @Override
+    public void moveEntity(double x, double y, double z) {
+        MoveEvent move = new MoveEvent(x, y, z);
+        EventManager.call(move);
+        super.moveEntity(move.x, move.y, move.z);
+    }
+
     /**
      * called every tick when the player is on foot. Performs all the things that normally happen during movement.
      */
-    public void onUpdateWalkingPlayer()
-    {
+    public void onUpdateWalkingPlayer() {
+        MotionUpdateEvent pre = new MotionUpdateEvent(this.rotationYaw, this.rotationPitch, this.posX, this.getEntityBoundingBox().minY, this.posZ, this.onGround);
+        EventManager.call(pre);
         boolean flag = this.isSprinting();
 
-        if (flag != this.serverSprintState)
-        {
-            if (flag)
-            {
+        if (flag != this.serverSprintState) {
+            if (flag) {
                 this.sendQueue.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.START_SPRINTING));
-            }
-            else
-            {
+            } else {
                 this.sendQueue.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.STOP_SPRINTING));
             }
 
@@ -206,72 +187,67 @@ public class EntityPlayerSP extends AbstractClientPlayer
 
         boolean flag1 = this.isSneaking();
 
-        if (flag1 != this.serverSneakState)
-        {
-            if (flag1)
-            {
+        if (flag1 != this.serverSneakState) {
+            if (flag1) {
                 this.sendQueue.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.START_SNEAKING));
-            }
-            else
-            {
+            } else {
                 this.sendQueue.addToSendQueue(new C0BPacketEntityAction(this, C0BPacketEntityAction.Action.STOP_SNEAKING));
             }
 
             this.serverSneakState = flag1;
         }
 
-        if (this.isCurrentViewEntity())
-        {
-            double d0 = this.posX - this.lastReportedPosX;
-            double d1 = this.getEntityBoundingBox().minY - this.lastReportedPosY;
-            double d2 = this.posZ - this.lastReportedPosZ;
-            double d3 = (double)(this.rotationYaw - this.lastReportedYaw);
-            double d4 = (double)(this.rotationPitch - this.lastReportedPitch);
+        if (this.isCurrentViewEntity()) {
+            double x = pre.getX();
+            double y = pre.getY();
+            double z = pre.getZ();
+            float yaw = pre.getYaw();
+            float pitch = pre.getPitch();
+            boolean ground = pre.isOnGround();
+            double d0 = x - this.lastReportedPosX;
+            double d1 = y - this.lastReportedPosY;
+            double d2 = z - this.lastReportedPosZ;
+            double d3 = (yaw - this.lastReportedYaw);
+            double d4 = (pitch - this.lastReportedPitch);
             boolean flag2 = d0 * d0 + d1 * d1 + d2 * d2 > 9.0E-4D || this.positionUpdateTicks >= 20;
             boolean flag3 = d3 != 0.0D || d4 != 0.0D;
 
-            if (this.ridingEntity == null)
-            {
-                if (flag2 && flag3)
-                {
-                    this.sendQueue.addToSendQueue(new C03PacketPlayer.C06PacketPlayerPosLook(this.posX, this.getEntityBoundingBox().minY, this.posZ, this.rotationYaw, this.rotationPitch, this.onGround));
+            if (this.ridingEntity == null) {
+                if (!pre.isCancelled()) {
+                    if (flag2 && flag3) {
+                        sendQueue.addToSendQueue(new C03PacketPlayer.C06PacketPlayerPosLook(x, y, z, yaw, pitch, ground));
+                    } else if (flag2) {
+                        sendQueue.addToSendQueue(new C03PacketPlayer.C04PacketPlayerPosition(x, y, z, ground));
+                    } else if (flag3) {
+                        sendQueue.addToSendQueue(new C03PacketPlayer.C05PacketPlayerLook(yaw, pitch, ground));
+                    } else {
+                        sendQueue.addToSendQueue(new C03PacketPlayer(ground));
+                    }
                 }
-                else if (flag2)
-                {
-                    this.sendQueue.addToSendQueue(new C03PacketPlayer.C04PacketPlayerPosition(this.posX, this.getEntityBoundingBox().minY, this.posZ, this.onGround));
-                }
-                else if (flag3)
-                {
-                    this.sendQueue.addToSendQueue(new C03PacketPlayer.C05PacketPlayerLook(this.rotationYaw, this.rotationPitch, this.onGround));
-                }
-                else
-                {
-                    this.sendQueue.addToSendQueue(new C03PacketPlayer(this.onGround));
-                }
-            }
-            else
-            {
+            } else {
                 this.sendQueue.addToSendQueue(new C03PacketPlayer.C06PacketPlayerPosLook(this.motionX, -999.0D, this.motionZ, this.rotationYaw, this.rotationPitch, this.onGround));
                 flag2 = false;
             }
 
             ++this.positionUpdateTicks;
 
-            if (flag2)
-            {
-                this.lastReportedPosX = this.posX;
-                this.lastReportedPosY = this.getEntityBoundingBox().minY;
-                this.lastReportedPosZ = this.posZ;
+            if (flag2) {
+                this.lastReportedPosX = x;
+                this.lastReportedPosY = y;
+                this.lastReportedPosZ = z;
                 this.positionUpdateTicks = 0;
             }
 
-            if (flag3)
-            {
-                this.lastReportedYaw = this.rotationYaw;
-                this.lastReportedPitch = this.rotationPitch;
+            if (flag3) {
+                this.lastReportedYaw = yaw;
+                this.lastReportedPitch = pitch;
             }
+
+            MotionUpdateEvent post = new MotionUpdateEvent();
+            EventManager.call(post);
         }
     }
+
 
     /**
      * Called when player presses the drop item key
@@ -785,11 +761,14 @@ public class EntityPlayerSP extends AbstractClientPlayer
         boolean flag2 = this.movementInput.moveForward >= f;
         this.movementInput.updatePlayerMoveState();
 
-        if (this.isUsingItem() && !this.isRiding())
-        {
-            this.movementInput.moveStrafe *= 0.2F;
-            this.movementInput.moveForward *= 0.2F;
-            this.sprintToggleTimer = 0;
+        if (this.isUsingItem() && !this.isRiding()) {
+            SlowdownEvent event = new SlowdownEvent();
+            EventManager.call(event);
+            if (!event.isCancelled()) {
+                this.movementInput.moveStrafe *= 0.2F;
+                this.movementInput.moveForward *= 0.2F;
+                this.sprintToggleTimer = 0;
+            }
         }
 
         this.pushOutOfBlocks(this.posX - (double)this.width * 0.35D, this.getEntityBoundingBox().minY + 0.5D, this.posZ + (double)this.width * 0.35D);

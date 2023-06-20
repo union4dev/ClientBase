@@ -3,24 +3,13 @@ package net.minecraft.client.renderer;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.gson.JsonSyntaxException;
-import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Callable;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.AbstractClientPlayer;
-import net.minecraft.client.gui.GuiChat;
-import net.minecraft.client.gui.GuiDownloadTerrain;
-import net.minecraft.client.gui.GuiMainMenu;
-import net.minecraft.client.gui.MapItemRenderer;
-import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.gui.*;
 import net.minecraft.client.particle.EffectRenderer;
 import net.minecraft.client.renderer.chunk.RenderChunk;
 import net.minecraft.client.renderer.culling.ClippingHelper;
@@ -56,20 +45,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Potion;
 import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.src.Config;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
-import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.util.EnumWorldBlockLayer;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MouseFilter;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ReportedException;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProvider;
 import net.minecraft.world.WorldSettings;
@@ -96,6 +72,17 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
 import org.lwjgl.opengl.GLContext;
 import org.lwjgl.util.glu.Project;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.render.HurtCamEvent;
+import org.union4dev.base.events.render.Render3DEvent;
+
+import java.io.IOException;
+import java.nio.FloatBuffer;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Callable;
 
 public class EntityRenderer implements IResourceManagerReloadListener
 {
@@ -202,8 +189,8 @@ public class EntityRenderer implements IResourceManagerReloadListener
     private double cameraZoom = 1.0D;
     private double cameraYaw;
     private double cameraPitch;
-    private ShaderGroup theShaderGroup;
-    private static final ResourceLocation[] shaderResourceLocations = new ResourceLocation[] {new ResourceLocation("shaders/post/notch.json"), new ResourceLocation("shaders/post/fxaa.json"), new ResourceLocation("shaders/post/art.json"), new ResourceLocation("shaders/post/bumpy.json"), new ResourceLocation("shaders/post/blobs2.json"), new ResourceLocation("shaders/post/pencil.json"), new ResourceLocation("shaders/post/color_convolve.json"), new ResourceLocation("shaders/post/deconverge.json"), new ResourceLocation("shaders/post/flip.json"), new ResourceLocation("shaders/post/invert.json"), new ResourceLocation("shaders/post/ntsc.json"), new ResourceLocation("shaders/post/outline.json"), new ResourceLocation("shaders/post/phosphor.json"), new ResourceLocation("shaders/post/scan_pincushion.json"), new ResourceLocation("shaders/post/sobel.json"), new ResourceLocation("shaders/post/bits.json"), new ResourceLocation("shaders/post/desaturate.json"), new ResourceLocation("shaders/post/green.json"), new ResourceLocation("shaders/post/blur.json"), new ResourceLocation("shaders/post/wobble.json"), new ResourceLocation("shaders/post/blobs.json"), new ResourceLocation("shaders/post/antialias.json"), new ResourceLocation("shaders/post/creeper.json"), new ResourceLocation("shaders/post/spider.json")};
+    public ShaderGroup theShaderGroup;
+    private static final ResourceLocation[] shaderResourceLocations = new ResourceLocation[]{new ResourceLocation("shaders/post/notch.json"), new ResourceLocation("shaders/post/fxaa.json"), new ResourceLocation("shaders/post/art.json"), new ResourceLocation("shaders/post/bumpy.json"), new ResourceLocation("shaders/post/blobs2.json"), new ResourceLocation("shaders/post/pencil.json"), new ResourceLocation("shaders/post/color_convolve.json"), new ResourceLocation("shaders/post/deconverge.json"), new ResourceLocation("shaders/post/flip.json"), new ResourceLocation("shaders/post/invert.json"), new ResourceLocation("shaders/post/ntsc.json"), new ResourceLocation("shaders/post/outline.json"), new ResourceLocation("shaders/post/phosphor.json"), new ResourceLocation("shaders/post/scan_pincushion.json"), new ResourceLocation("shaders/post/sobel.json"), new ResourceLocation("shaders/post/bits.json"), new ResourceLocation("shaders/post/desaturate.json"), new ResourceLocation("shaders/post/green.json"), new ResourceLocation("shaders/post/blur.json"), new ResourceLocation("shaders/post/wobble.json"), new ResourceLocation("shaders/post/blobs.json"), new ResourceLocation("shaders/post/antialias.json"), new ResourceLocation("shaders/post/creeper.json"), new ResourceLocation("shaders/post/spider.json")};
     public static final int shaderCount = shaderResourceLocations.length;
     private int shaderIndex;
     private boolean useShader;
@@ -325,17 +312,13 @@ public class EntityRenderer implements IResourceManagerReloadListener
         }
     }
 
-    private void loadShader(ResourceLocation resourceLocationIn)
-    {
-        if (OpenGlHelper.isFramebufferEnabled())
-        {
-            try
-            {
+    public void loadShader(ResourceLocation resourceLocationIn) {
+        if (OpenGlHelper.isFramebufferEnabled()) {
+            try {
                 this.theShaderGroup = new ShaderGroup(this.mc.getTextureManager(), this.resourceManager, this.mc.getFramebuffer(), resourceLocationIn);
                 this.theShaderGroup.createBindFramebuffers(this.mc.displayWidth, this.mc.displayHeight);
                 this.useShader = true;
-            }
-            catch (IOException ioexception)
+            } catch (IOException ioexception)
             {
                 logger.warn((String)("Failed to load shader: " + resourceLocationIn), (Throwable)ioexception);
                 this.shaderIndex = shaderCount;
@@ -674,14 +657,16 @@ public class EntityRenderer implements IResourceManagerReloadListener
 
     private void hurtCameraEffect(float partialTicks)
     {
-        if (this.mc.getRenderViewEntity() instanceof EntityLivingBase)
-        {
-            EntityLivingBase entitylivingbase = (EntityLivingBase)this.mc.getRenderViewEntity();
-            float f = (float)entitylivingbase.hurtTime - partialTicks;
+        if (this.mc.getRenderViewEntity() instanceof EntityLivingBase) {
+            HurtCamEvent event = new HurtCamEvent();
+            EventManager.call(event);
+            if (event.isCancelled())
+                return;
+            EntityLivingBase entitylivingbase = (EntityLivingBase) this.mc.getRenderViewEntity();
+            float f = (float) entitylivingbase.hurtTime - partialTicks;
 
-            if (entitylivingbase.getHealth() <= 0.0F)
-            {
-                float f1 = (float)entitylivingbase.deathTime + partialTicks;
+            if (entitylivingbase.getHealth() <= 0.0F) {
+                float f1 = (float) entitylivingbase.deathTime + partialTicks;
                 GlStateManager.rotate(40.0F - 8000.0F / (f1 + 200.0F), 0.0F, 0.0F, 1.0F);
             }
 
@@ -1874,7 +1859,7 @@ public class EntityRenderer implements IResourceManagerReloadListener
             Reflector.callVoid(Reflector.ForgeHooksClient_setRenderPass, new Object[] {Integer.valueOf(1)});
             this.mc.renderGlobal.renderEntities(entity, icamera, partialTicks);
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
-            Reflector.callVoid(Reflector.ForgeHooksClient_setRenderPass, new Object[] {Integer.valueOf(-1)});
+            Reflector.callVoid(Reflector.ForgeHooksClient_setRenderPass, new Object[]{Integer.valueOf(-1)});
             RenderHelper.disableStandardItemLighting();
         }
 
@@ -1884,14 +1869,18 @@ public class EntityRenderer implements IResourceManagerReloadListener
         GlStateManager.disableBlend();
         GlStateManager.disableFog();
 
-        if (entity.posY + (double)entity.getEyeHeight() >= 128.0D + (double)(this.mc.gameSettings.ofCloudsHeight * 128.0F))
-        {
+        GlStateManager.pushMatrix();
+        Render3DEvent render3D = new Render3DEvent(partialTicks);
+        EventManager.call(render3D);
+        GlStateManager.popMatrix();
+
+
+        if (entity.posY + (double) entity.getEyeHeight() >= 128.0D + (double) (this.mc.gameSettings.ofCloudsHeight * 128.0F)) {
             this.mc.mcProfiler.endStartSection("aboveClouds");
             this.renderCloudsCheck(renderglobal, partialTicks, pass);
         }
 
-        if (Reflector.ForgeHooksClient_dispatchRenderLast.exists())
-        {
+        if (Reflector.ForgeHooksClient_dispatchRenderLast.exists()) {
             this.mc.mcProfiler.endStartSection("forge_render_last");
             Reflector.callVoid(Reflector.ForgeHooksClient_dispatchRenderLast, new Object[] {renderglobal, Float.valueOf(partialTicks)});
         }

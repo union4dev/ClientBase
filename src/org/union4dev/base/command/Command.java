@@ -1,13 +1,19 @@
-package client.command;
+package org.union4dev.base.command;
 
-import client.Client;
+import org.union4dev.base.util.ChatUtil;
 
+/**
+ * Abstract Command
+ *
+ * @author cubk
+ */
 public interface Command {
 
-	Client client = Client.getClient();
-
-	boolean run(String[] args);
+	void run(String[] args);
 
 	String usage();
 
+	default void printUsage() {
+		ChatUtil.info(usage());
+	}
 }

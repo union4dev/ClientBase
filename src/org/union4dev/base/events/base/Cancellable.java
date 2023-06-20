@@ -1,4 +1,4 @@
-package org.union4dev.base.events;
+package org.union4dev.base.events.base;
 
 /**
  * Simple interface which should be implemented in events that can be cancelled.

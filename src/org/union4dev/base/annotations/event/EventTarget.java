@@ -1,7 +1,7 @@
-package org.union4dev.base.annotations;
+package org.union4dev.base.annotations.event;
 
-import com.darkmagician6.eventapi.Priority;
 import org.union4dev.base.Access;
+import org.union4dev.base.events.Priority;
 
 import java.lang.annotation.*;
 

@@ -1,8 +1,8 @@
-package org.union4dev.klazz.event.implement;
+package org.union4dev.base.events.render;
 
-import org.union4dev.klazz.event.misc.Event;
+import org.union4dev.base.events.base.Event;
 
-public class Render3DEvent extends Event {
+public class Render3DEvent implements Event {
 
     private final float renderPartialTicks;
 

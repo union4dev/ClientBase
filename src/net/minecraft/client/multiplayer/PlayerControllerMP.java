@@ -13,21 +13,13 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
-import net.minecraft.network.play.client.C02PacketUseEntity;
-import net.minecraft.network.play.client.C07PacketPlayerDigging;
-import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
-import net.minecraft.network.play.client.C09PacketHeldItemChange;
-import net.minecraft.network.play.client.C0EPacketClickWindow;
-import net.minecraft.network.play.client.C10PacketCreativeInventoryAction;
-import net.minecraft.network.play.client.C11PacketEnchantItem;
+import net.minecraft.network.play.client.*;
 import net.minecraft.stats.StatFileWriter;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.misc.AttackEvent;
 
 public class PlayerControllerMP
 {
@@ -492,15 +484,18 @@ public class PlayerControllerMP
     /**
      * Attacks an entity
      */
-    public void attackEntity(EntityPlayer playerIn, Entity targetEntity)
-    {
-        this.syncCurrentPlayItem();
-        this.netClientHandler.addToSendQueue(new C02PacketUseEntity(targetEntity, C02PacketUseEntity.Action.ATTACK));
+    public void attackEntity(EntityPlayer playerIn, Entity targetEntity) {
+        AttackEvent event = new AttackEvent(targetEntity, true);
+        EventManager.call(event);
+        if (!event.isCancelled()) {
+            this.syncCurrentPlayItem();
+            this.netClientHandler.addToSendQueue(new C02PacketUseEntity(targetEntity, C02PacketUseEntity.Action.ATTACK));
 
-        if (this.currentGameType != WorldSettings.GameType.SPECTATOR)
-        {
-            playerIn.attackTargetEntityWithCurrentItem(targetEntity);
+            if (this.currentGameType != WorldSettings.GameType.SPECTATOR) {
+                playerIn.attackTargetEntityWithCurrentItem(targetEntity);
+            }
         }
+        EventManager.call(new AttackEvent(targetEntity));
     }
 
     /**

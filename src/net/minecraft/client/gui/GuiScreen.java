@@ -3,18 +3,6 @@ package net.minecraft.client.gui;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import java.awt.Toolkit;
-import java.awt.datatransfer.ClipboardOwner;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.datatransfer.Transferable;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.stream.GuiTwitchUserMode;
 import net.minecraft.client.renderer.GlStateManager;
@@ -42,7 +30,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.misc.GuiClickEvent;
 import tv.twitch.chat.ChatUserInfo;
+
+import java.awt.*;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 public abstract class GuiScreen extends Gui implements GuiYesNoCallback
 {
@@ -496,16 +499,16 @@ public abstract class GuiScreen extends Gui implements GuiYesNoCallback
     /**
      * Called when the mouse is clicked. Args : mouseX, mouseY, clickedButton
      */
-    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException
-    {
-        if (mouseButton == 0)
-        {
-            for (int i = 0; i < this.buttonList.size(); ++i)
-            {
-                GuiButton guibutton = (GuiButton)this.buttonList.get(i);
+    protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        GuiClickEvent guiClickEvent = new GuiClickEvent(mouseX, mouseY, mouseButton);
+        EventManager.call(guiClickEvent);
+        if (guiClickEvent.isCancelled())
+            return;
+        if (mouseButton == 0) {
+            for (int i = 0; i < this.buttonList.size(); ++i) {
+                GuiButton guibutton = (GuiButton) this.buttonList.get(i);
 
-                if (guibutton.mousePressed(this.mc, mouseX, mouseY))
-                {
+                if (guibutton.mousePressed(this.mc, mouseX, mouseY)) {
                     this.selectedButton = guibutton;
                     guibutton.playPressSound(this.mc.getSoundHandler());
                     this.actionPerformed(guibutton);

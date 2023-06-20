@@ -1,9 +1,8 @@
-package com.darkmagician6.eventapi;
+package org.union4dev.base.events;
 
-import org.union4dev.base.events.Event;
-import org.union4dev.base.events.EventStoppable;
 import org.union4dev.base.Access;
 import org.union4dev.base.annotations.event.EventTarget;
+import org.union4dev.base.events.base.Event;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -109,17 +108,17 @@ public final class EventManager {
 		}
 	}
 
-	/**
-	 * Registers a new MethodData to the HashMap. If the HashMap already contains
-	 * the key of the Method's first argument it will add a new MethodData to key's
-	 * matching list and sorts it based on Priority. @see
-	 * com.darkmagician6.eventapi.Priority Otherwise it will put a new entry
-	 * in the HashMap with a the first argument's class and a new
-	 * CopyOnWriteArrayList containing the new MethodData.
-	 *
-	 * @param method Method to register to the HashMap.
-	 * @param object Source object of the method.
-	 */
+    /**
+     * Registers a new MethodData to the HashMap. If the HashMap already contains
+     * the key of the Method's first argument it will add a new MethodData to key's
+     * matching list and sorts it based on Priority. @see
+     * org.union4dev.base.events.Priority Otherwise it will put a new entry
+     * in the HashMap with a the first argument's class and a new
+     * CopyOnWriteArrayList containing the new MethodData.
+     *
+     * @param method Method to register to the HashMap.
+     * @param object Source object of the method.
+     */
 	private static void register(Method method, Object object) {
 		Class<? extends Event> indexClass = (Class<? extends Event>) method.getParameterTypes()[0];
 		// New MethodData from the Method we are registering.
@@ -235,13 +234,13 @@ public final class EventManager {
 	 */
 	public static Event call(final Event event) {
 		List<MethodData> dataList = REGISTRY_MAP.get(event.getClass());
-		if (dataList != null) {
-			boolean isEventStoppable = event instanceof EventStoppable;
+        if (dataList != null) {
+            boolean isEventStoppable = event instanceof Event.EventStoppable;
 
 			for (final MethodData data : dataList) {
 				EventTarget target = data.getTarget().getAnnotation(EventTarget.class);
 
-				if (isEventStoppable && ((EventStoppable) event).isStopped()) {
+                if (isEventStoppable && ((Event.EventStoppable) event).isStopped()) {
 					break;
 				}
 

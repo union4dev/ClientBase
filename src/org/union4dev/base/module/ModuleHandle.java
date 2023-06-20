@@ -1,10 +1,17 @@
 package org.union4dev.base.module;
 
-import com.darkmagician6.eventapi.EventManager;
+import org.lwjgl.input.Keyboard;
+import org.union4dev.base.annotations.module.Disable;
+import org.union4dev.base.annotations.module.Enable;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.value.AbstractValue;
 
-public final class Module {
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 
-    private boolean state;
+public final class ModuleHandle {
 
     private final String name;
 
@@ -12,23 +19,68 @@ public final class Module {
 
     private final Object object;
 
-    public Module(String name,Category category,Object object){
+    private ArrayList<AbstractValue<?>> values;
+
+    private boolean state;
+
+    private String suffix;
+
+    private int key;
+
+    public ModuleHandle(String name, Category category, Object object) {
         this.state = false;
         this.name = name;
         this.category = category;
         this.object = object;
+        this.values = new ArrayList<>();
+        this.suffix = "";
+        this.key = Keyboard.KEY_NONE;
     }
 
-    void setEnable(boolean state) {
+    public int getKey() {
+        return key;
+    }
 
-        if(state == this.state) return;
+    public void setKey(int key) {
+        this.key = key;
+    }
 
+    public String getSuffix() {
+        return suffix;
+    }
+
+    public void setValues(ArrayList<AbstractValue<?>> values) {
+        this.values = values;
+    }
+
+    public void setSuffix(String suffix) {
+        this.suffix = suffix;
+    }
+
+    public ArrayList<AbstractValue<?>> getValues() {
+        return values;
+    }
+
+    public void setEnable(boolean state) {
+        if (state == this.state) return;
         this.state = state;
-
-        if(state){
+        if (state) {
             EventManager.register(object);
-        }else {
+            invokeMethodsAnnotationPresent(Enable.class);
+        } else {
             EventManager.unregister(object);
+            invokeMethodsAnnotationPresent(Disable.class);
+        }
+    }
+
+    private void invokeMethodsAnnotationPresent(Class<? extends Annotation> anno) {
+        for (Method method : this.object.getClass().getDeclaredMethods()) {
+            if (method.isAnnotationPresent(anno)) {
+                try {
+                    method.invoke(object);
+                } catch (IllegalAccessException | InvocationTargetException e) {
+                }
+            }
         }
     }
 
@@ -36,11 +88,11 @@ public final class Module {
         return category;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    boolean isEnabled() {
+    public boolean isEnabled() {
         return state;
     }
 }

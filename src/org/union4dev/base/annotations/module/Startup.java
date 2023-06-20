@@ -1,4 +1,4 @@
-package org.union4dev.base.annotations;
+package org.union4dev.base.annotations.module;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
