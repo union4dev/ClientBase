@@ -10,12 +10,12 @@ minecraft.
 - A Example HUD
 - 15+ Events that have been Hooked
 - Simple Value System
+- Example modules
 
 ### TODO
 
 Update soon
 
-- Click Gui
 - Script System
 
 ### Credit
