@@ -8,6 +8,8 @@ import java.util.Arrays;
 public class ComboValue extends AbstractValue<String> {
 
     private final String[] strings;
+    public boolean shouldShow;
+
 
     public ComboValue(String name, String value, String... values) {
         super(name);

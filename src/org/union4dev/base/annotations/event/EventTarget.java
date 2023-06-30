@@ -4,6 +4,7 @@ import org.union4dev.base.Access;
 import org.union4dev.base.events.Priority;
 
 import java.lang.annotation.*;
+import java.util.function.BooleanSupplier;
 
 /**
  * Marks a method so that the EventManager knows that it should be registered.

@@ -1,8 +1,15 @@
 package org.union4dev.base.module;
 
 import net.minecraft.util.EnumChatFormatting;
+import org.union4dev.base.annotations.event.EventTarget;
+import org.union4dev.base.annotations.module.Binding;
 import org.union4dev.base.annotations.module.Startup;
+import org.union4dev.base.events.EventManager;
+import org.union4dev.base.events.misc.KeyInputEvent;
+import org.union4dev.base.module.handlers.ModuleHandle;
+import org.union4dev.base.module.handlers.SubModuleHandle;
 import org.union4dev.base.module.movement.Sprint;
+import org.union4dev.base.module.render.ClickGui;
 import org.union4dev.base.module.render.FullBright;
 import org.union4dev.base.module.render.HUD;
 import org.union4dev.base.value.AbstractValue;
@@ -13,6 +20,9 @@ import org.union4dev.base.value.impl.NumberValue;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
+import java.util.function.BooleanSupplier;
 
 /**
  * Module Manager, Manage and access module.
@@ -31,6 +41,10 @@ public final class ModuleManager {
      * Initialize modules
      */
     public ModuleManager() {
+
+        // Register Event
+        EventManager.register(this);
+
         // Register Combat
 
         // Register Movement
@@ -39,9 +53,17 @@ public final class ModuleManager {
         // Register Render
         register(HUD.class, "HUD", Category.Render);
         register(FullBright.class, "FullBright", Category.Render);
+        register(ClickGui.class,"ClickGui",Category.Render);
 
         // Register Misc
 
+    }
+
+    @EventTarget
+    public void onKey(KeyInputEvent event) {
+        for (Class<?> module : modules.keySet())
+            if (getKey(module) == event.getKey())
+                toggle(module);
     }
 
     /**
@@ -63,6 +85,11 @@ public final class ModuleManager {
                 module.setEnable(true);
             }
 
+            if (clazz.isAnnotationPresent(Binding.class)) {
+                Binding binding = clazz.getAnnotation(Binding.class);
+                module.setKey(binding.value());
+            }
+
             for (final Field field : clazz.getDeclaredFields()) {
                 try {
                     field.setAccessible(true);
@@ -80,6 +107,66 @@ public final class ModuleManager {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Register sub module
+     *
+     * @param bigFather 大爹
+     * @param clazz     SubModule Class
+     * @param name      SubModule Name
+     * @return {@link SubModuleHandle}
+     */
+    SubModuleHandle registerSub(ModuleHandle bigFather,Class<?> clazz, String name) {
+        try {
+            Object instance = clazz.newInstance();
+            SubModuleHandle module = new SubModuleHandle(bigFather,name, instance);
+
+            for (final Field field : clazz.getDeclaredFields()) {
+                try {
+                    field.setAccessible(true);
+                    final Object obj = field.get(instance);
+                    if (obj instanceof AbstractValue<?>) {
+                        AbstractValue<?> value = (AbstractValue<?>) obj;
+                        value.addSupplier(() -> !bigFather.isEnabled());
+                        bigFather.getValues().add(value);
+                        sortValue(bigFather);
+                    }
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            return module;
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get all modules in a category
+     *
+     * @param category Target Category
+     * @return {@link List}<{@link Class}<{@link ?}>>
+     */
+    public List<Class<?>> getModulesByCategory(Category category) {
+        ArrayList<Class<?>> mods = new ArrayList<>();
+        for(Class<?> module : getModules()) {
+            if(getCategory(module) == category)
+                mods.add(module);
+        }
+        return mods;
+    }
+
+    /**
+     * Get module category
+     *
+     * @param module Module Class
+     * @return {@link Category}
+     */
+    public Category getCategory(Class<?> module){
+        return modules.get(module).getCategory();
     }
 
     /**
@@ -162,10 +249,10 @@ public final class ModuleManager {
     /**
      * Get all module classes
      *
-     * @return {@link Iterable}<{@link Class}<{@link ?}>>
+     * @return {@link Set}<{@link Class}<{@link ?}>>
      */
-    public Iterable<Class<?>> getModules() {
-        return modules.keySet();
+    public List<Class<?>> getModules() {
+        return new ArrayList<>(modules.keySet());
     }
 
     /**
@@ -210,6 +297,16 @@ public final class ModuleManager {
     }
 
     /**
+     * Module has values?
+     *
+     * @param module Module Class
+     * @return Has
+     */
+    public boolean hasValue(Class<?> module) {
+        return !modules.get(module).getValues().isEmpty();
+    }
+
+    /**
      * Get a module enable status
      *
      * @param module Module Class
@@ -220,6 +317,16 @@ public final class ModuleManager {
     }
 
     /**
+     * Get a module visible status
+     *
+     * @param module Module Class
+     * @return Status
+     */
+    public boolean isVisible(Class<?> module) {
+        return modules.get(module).isVisible();
+    }
+
+    /**
      * Set a module enable status
      *
      * @param module Module Class
@@ -227,5 +334,15 @@ public final class ModuleManager {
      */
     public void setEnable(Class<?> module, boolean state) {
         this.modules.get(module).setEnable(state);
+    }
+
+    /**
+     * Set a module visible status
+     *
+     * @param module Module Class
+     * @param state  Status
+     */
+    public void setVisible(Class<?> module, boolean state) {
+        this.modules.get(module).setVisible(state);
     }
 }

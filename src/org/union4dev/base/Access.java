@@ -3,6 +3,9 @@ package org.union4dev.base;
 import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.Display;
 import org.union4dev.base.command.CommandManager;
+
+import org.union4dev.base.gui.click.ClickGuiScreen;
+import org.union4dev.base.gui.font.FontManager;
 import org.union4dev.base.module.ModuleManager;
 
 /**
@@ -32,6 +35,16 @@ public final class Access {
     private final CommandManager commandManager;
 
     /**
+     * ClickGui Instance
+     */
+    private final ClickGuiScreen clickGui;
+
+    /**
+     * Font renderers
+     */
+    private final FontManager fontManager;
+
+    /**
      * Entry point
      */
     public Access() {
@@ -40,10 +53,13 @@ public final class Access {
         // Initialize managers
         moduleManager = new ModuleManager();
         commandManager = new CommandManager();
+        fontManager = new FontManager();
+        clickGui = new ClickGuiScreen();
 
         // Finished Initialization
         Display.setTitle(CLIENT_NAME);
     }
+
 
     /**
      * Get client instance
@@ -73,6 +89,24 @@ public final class Access {
     }
 
     /**
+     * Get ClickGui Instance
+     *
+     * @return {@link ClickGuiScreen}
+     */
+    public ClickGuiScreen getClickGui() {
+        return clickGui;
+    }
+
+    /**
+     * Get FontManager Instance
+     *
+     * @return {@link FontManager}
+     */
+    public FontManager getFontManager() {
+        return fontManager;
+    }
+
+    /**
      * Implement this class for access instances
      *
      * @author cubk
@@ -83,6 +117,10 @@ public final class Access {
 
         default void setSuffix(String suffix, Object object) {
             access.getModuleManager().getHandle(object).setSuffix(suffix);
+        }
+
+        default void setEnable(Object object, boolean state) {
+            access.getModuleManager().getHandle(object).setEnable(state);
         }
 
         default void setEnable(Class<?> module, boolean state) {

@@ -5,6 +5,7 @@ import org.union4dev.base.annotations.event.EventTarget;
 import org.union4dev.base.annotations.module.Startup;
 import org.union4dev.base.events.render.Render2DEvent;
 import org.union4dev.base.value.impl.BooleanValue;
+import org.union4dev.base.value.impl.NumberValue;
 
 import java.util.ArrayList;
 
@@ -14,7 +15,9 @@ public class HUD implements Access.InstanceAccess {
     /**
      * An Example Bool value
      */
-    public BooleanValue array = new BooleanValue("Module Array", true);
+    public BooleanValue array = new BooleanValue("Array", true);
+
+    public NumberValue spacing = new NumberValue("Spacing",3,1,5,1);
 
     /**
      * Subscribe a {@link Render2DEvent}
@@ -23,21 +26,22 @@ public class HUD implements Access.InstanceAccess {
      */
     @EventTarget
     public void onRender2D(Render2DEvent event) {
-        mc.fontRendererObj.drawStringWithShadow("Client Base", 4, 4, -1);
-
-        int width = event.getScaledResolution().getScaledWidth();
-        int y = 4;
-        ArrayList<Class<?>> enabledModules = new ArrayList<>();
-        for (Class<?> m : access.getModuleManager().getModules()) {
-            if (access.getModuleManager().isEnabled(m)) {
-                enabledModules.add(m);
+        access.getFontManager().F18.drawStringWithShadow("Client Base", 4, 4, -1);
+        if(array.getValue()){
+            int width = event.getScaledResolution().getScaledWidth();
+            int y = 4;
+            ArrayList<Class<?>> enabledModules = new ArrayList<>();
+            for (Class<?> m : access.getModuleManager().getModules()) {
+                if (access.getModuleManager().isEnabled(m) && access.getModuleManager().isVisible(m)) {
+                    enabledModules.add(m);
+                }
             }
-        }
-        enabledModules.sort((o1, o2) -> mc.fontRendererObj.getStringWidth(access.getModuleManager().format(o2)) - mc.fontRendererObj.getStringWidth(access.getModuleManager().format(o1)));
-        for (Class<?> module : enabledModules) {
-            int moduleWidth = mc.fontRendererObj.getStringWidth(access.getModuleManager().format(module));
-            mc.fontRendererObj.drawStringWithShadow(access.getModuleManager().format(module), width - moduleWidth - 4, y, -1);
-            y += mc.fontRendererObj.FONT_HEIGHT + 3;
+            enabledModules.sort((o1, o2) -> access.getFontManager().F18.getWidth(access.getModuleManager().format(o2)) - access.getFontManager().F18.getWidth(access.getModuleManager().format(o1)));
+            for (Class<?> module : enabledModules) {
+                int moduleWidth = access.getFontManager().F18.getWidth(access.getModuleManager().format(module));
+                access.getFontManager().F18.drawStringWithShadow(access.getModuleManager().format(module), width - moduleWidth - 4, y, -1);
+                y += access.getFontManager().F18.getHeight() + spacing.getValue();
+            }
         }
     }
 
