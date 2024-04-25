@@ -1,17 +1,16 @@
 package org.union4dev.base.module;
 
 import net.minecraft.util.EnumChatFormatting;
+import org.union4dev.base.Access;
+import org.union4dev.base.Initializer;
 import org.union4dev.base.annotations.event.EventTarget;
-import org.union4dev.base.annotations.module.Binding;
-import org.union4dev.base.annotations.module.Startup;
+import org.union4dev.base.annotations.system.Binding;
+import org.union4dev.base.annotations.system.Module;
+import org.union4dev.base.annotations.system.Startup;
 import org.union4dev.base.events.EventManager;
 import org.union4dev.base.events.misc.KeyInputEvent;
 import org.union4dev.base.module.handlers.ModuleHandle;
 import org.union4dev.base.module.handlers.SubModuleHandle;
-import org.union4dev.base.module.movement.Sprint;
-import org.union4dev.base.module.render.ClickGui;
-import org.union4dev.base.module.render.FullBright;
-import org.union4dev.base.module.render.HUD;
 import org.union4dev.base.value.AbstractValue;
 import org.union4dev.base.value.impl.BooleanValue;
 import org.union4dev.base.value.impl.ComboValue;
@@ -22,14 +21,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BooleanSupplier;
 
 /**
  * Module Manager, Manage and access module.
  *
  * @author cubk
  */
-public final class ModuleManager {
+public final class ModuleManager implements Initializer {
     /**
      * Index Maps
      */
@@ -42,21 +40,18 @@ public final class ModuleManager {
      */
     public ModuleManager() {
 
+    }
+
+    public void init(){
         // Register Event
         EventManager.register(this);
 
-        // Register Combat
-
-        // Register Movement
-        register(Sprint.class, "Sprint", Category.Movement);
-
-        // Register Render
-        register(HUD.class, "HUD", Category.Render);
-        register(FullBright.class, "FullBright", Category.Render);
-        register(ClickGui.class,"ClickGui",Category.Render);
-
-        // Register Misc
-
+        initialize(clazz -> {
+            if(clazz.isAnnotationPresent(Module.class)){
+                Module module = clazz.getAnnotation(Module.class);
+                register(clazz,module.value(),module.category());
+            }
+        });
     }
 
     @EventTarget
@@ -75,7 +70,11 @@ public final class ModuleManager {
      */
     private void register(Class<?> clazz, String name, Category category) {
         try {
-            Object instance = clazz.newInstance();
+            Object instance = Access.getInstance().getInvoke().createInstance(clazz);
+
+            Access.getInstance().getInvoke().autoWired(instance);
+            Access.getInstance().getInvoke().registerBean(instance);
+
             ModuleHandle module = new ModuleHandle(name, category, instance);
 
             nameMap.put(name.toLowerCase(), clazz);

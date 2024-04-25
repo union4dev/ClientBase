@@ -1,11 +1,18 @@
 package org.union4dev.base.command;
 
-import org.union4dev.base.command.commands.BindCommand;
-import org.union4dev.base.command.commands.ToggleCommand;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.union4dev.base.Access;
+import org.union4dev.base.Initializer;
+import org.union4dev.base.annotations.system.Command;
 import org.union4dev.base.util.ChatUtil;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 
 /**
@@ -13,7 +20,7 @@ import java.util.Map;
  *
  * @author cubk
  */
-public class CommandManager {
+public class CommandManager implements Initializer {
 
     /**
      * Command Prefix, you can edit it
@@ -22,14 +29,68 @@ public class CommandManager {
     /**
      * Command map
      */
-    private final HashMap<String[], Command> commands = new HashMap<>();
+    private final HashMap<String[], CommandHandle> commands = new HashMap<>();
+    private final Logger logger = LogManager.getLogger("Command Manager");
 
     /**
      * Register commands
      */
-    public CommandManager() {
-        register(new ToggleCommand(), "t", "toggle");
-        register(new BindCommand(), "bind");
+    public void init() {
+        initialize(clazz -> {
+            if(clazz.isAnnotationPresent(Command.class)){
+                Command command = clazz.getAnnotation(Command.class);
+                Object inst = null;
+                try {
+                    inst = Access.getInstance().getInvoke().createInstance(clazz);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Object finalInst = inst;
+                try {
+                    assert finalInst != null;
+                    Access.getInstance().getInvoke().autoWired(finalInst);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                Access.getInstance().getInvoke().registerBean(finalInst);
+                CommandHandle handle = new CommandHandle() {
+
+                    @Override
+                    public void run(String[] args) {
+                        for (Method handler : getHandlers()) {
+                            try {
+                                Access.getInstance().getInvoke().invokeMethod(finalInst,handler,args);
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public String usage() {
+                        return command.usage();
+                    }
+                };
+
+                for (Method method : clazz.getDeclaredMethods()) {
+                    if(method.isAnnotationPresent(Command.Handler.class)){
+                        if(method.getParameters().length > 0){
+                            if(method.getParameters()[0].getType() == String[].class){
+                                handle.getHandlers().add(method);
+                            }else {
+                                logger.warn("Command class {} method {} has wrong parameters",clazz.getName(),method.getName());
+                            }
+                        }else {
+                            logger.warn("Command class {} method {} has no parameters",clazz.getName(),method.getName());
+                        }
+                    }
+                }
+
+                if(handle.getHandlers().size() > 0){
+                    register(handle,command.value());
+                }
+            }
+        });
     }
 
     /**
@@ -38,7 +99,7 @@ public class CommandManager {
      * @param instance Command Instance
      * @param name     Name (and alias)
      */
-    private void register(Command instance, String... name) {
+    private void register(CommandHandle instance, String... name) {
         commands.put(name, instance);
     }
 
@@ -60,10 +121,10 @@ public class CommandManager {
 
             String[] args = beheaded.split(" ");
 
-            Command command = getCommand(args[0]);
+            CommandHandle commandHandle = getCommand(args[0]);
 
-            if (command != null) {
-                command.run(args);
+            if (commandHandle != null) {
+                commandHandle.run(args);
             } else {
                 ChatUtil.info("Try -help.");
             }
@@ -78,10 +139,10 @@ public class CommandManager {
      * Get command instance
      *
      * @param name Command name or alias
-     * @return {@link Command}
+     * @return {@link CommandHandle}
      */
-    private Command getCommand(String name) {
-        for (Map.Entry<String[], Command> entry : commands.entrySet()) {
+    private CommandHandle getCommand(String name) {
+        for (Map.Entry<String[], CommandHandle> entry : commands.entrySet()) {
             String[] key = entry.getKey();
             for (String s : key) {
                 if (s.equalsIgnoreCase(name)) {
@@ -96,9 +157,9 @@ public class CommandManager {
     /**
      * Get command map
      *
-     * @return {@link HashMap}<{@link String[]}, {@link Command}>
+     * @return {@link HashMap}<{@link String[]}, {@link CommandHandle}>
      */
-    public HashMap<String[], Command> getCommands() {
+    public HashMap<String[], CommandHandle> getCommands() {
         return commands;
     }
 

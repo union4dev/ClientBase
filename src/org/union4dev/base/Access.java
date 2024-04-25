@@ -2,11 +2,13 @@ package org.union4dev.base;
 
 import net.minecraft.client.Minecraft;
 import org.lwjgl.opengl.Display;
+import org.union4dev.base.annotations.system.Command;
 import org.union4dev.base.command.CommandManager;
 
 import org.union4dev.base.gui.click.ClickGuiScreen;
 import org.union4dev.base.gui.font.FontManager;
 import org.union4dev.base.module.ModuleManager;
+import org.union4dev.base.util.LiteInvoke;
 
 /**
  * Client Entry
@@ -15,6 +17,7 @@ import org.union4dev.base.module.ModuleManager;
  *
  * @author cubk
  */
+@LiteInvoke.Instance
 public final class Access {
 
     public static String CLIENT_NAME = "Client Base";
@@ -44,6 +47,12 @@ public final class Access {
      */
     private final FontManager fontManager;
 
+    /*
+    * https://github.com/cubk1/LiteInvoke
+    * Dependency injection utility
+    */
+    private final LiteInvoke invoke;
+
     /**
      * Entry point
      */
@@ -51,10 +60,21 @@ public final class Access {
         INSTANCE = this;
 
         // Initialize managers
+        invoke = new LiteInvoke();
         moduleManager = new ModuleManager();
         commandManager = new CommandManager();
         fontManager = new FontManager();
         clickGui = new ClickGuiScreen();
+
+        try {
+            invoke.registerFields(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        moduleManager.init();
+        commandManager.init();
+        clickGui.init();
 
         // Finished Initialization
         Display.setTitle(CLIENT_NAME);
@@ -68,6 +88,13 @@ public final class Access {
      */
     public static Access getInstance() {
         return INSTANCE;
+    }
+
+    /**
+     * @return {@link LiteInvoke}
+     */
+    public LiteInvoke getInvoke() {
+        return invoke;
     }
 
     /**
@@ -129,6 +156,10 @@ public final class Access {
 
         default boolean isEnabled(Class<?> module) {
             return access.getModuleManager().isEnabled(module);
+        }
+
+        default String usage(Object command){
+            return command.getClass().getAnnotation(Command.class).usage();
         }
     }
 

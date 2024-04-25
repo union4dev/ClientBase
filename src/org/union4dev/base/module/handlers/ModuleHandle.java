@@ -1,8 +1,9 @@
 package org.union4dev.base.module.handlers;
 
 import org.lwjgl.input.Keyboard;
-import org.union4dev.base.annotations.module.Disable;
-import org.union4dev.base.annotations.module.Enable;
+import org.union4dev.base.Access;
+import org.union4dev.base.annotations.system.Disable;
+import org.union4dev.base.annotations.system.Enable;
 import org.union4dev.base.events.EventManager;
 import org.union4dev.base.module.Category;
 import org.union4dev.base.value.AbstractValue;
@@ -90,8 +91,9 @@ public final class ModuleHandle {
         for (Method method : this.object.getClass().getDeclaredMethods()) {
             if (method.isAnnotationPresent(anno)) {
                 try {
-                    method.invoke(object);
-                } catch (IllegalAccessException | InvocationTargetException e) {
+                    Access.getInstance().getInvoke().invokeMethod(object,method);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }

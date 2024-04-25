@@ -1,9 +1,12 @@
 package org.union4dev.base.module.render;
 
 import net.minecraft.client.Minecraft;
-import org.union4dev.base.annotations.module.Disable;
-import org.union4dev.base.annotations.module.Enable;
+import org.union4dev.base.annotations.system.Disable;
+import org.union4dev.base.annotations.system.Enable;
+import org.union4dev.base.annotations.system.Module;
+import org.union4dev.base.module.Category;
 
+@Module(value = "Full Bright",category = Category.Render)
 public class FullBright {
 
     @Enable

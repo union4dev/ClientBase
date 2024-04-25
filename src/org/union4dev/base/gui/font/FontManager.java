@@ -6,9 +6,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 
 public class FontManager {
-    public CFontRenderer F14 = new CFontRenderer(getFont(new ResourceLocation("client/fonts/misans.ttf"), 14));
-    public CFontRenderer F18 = new CFontRenderer(getFont(new ResourceLocation("client/fonts/misans.ttf"), 18));
-    public CFontRenderer F16 = new CFontRenderer(getFont(new ResourceLocation("client/fonts/misans.ttf"), 16));
+    public CFontRenderer F14 = new CFontRenderer(getFont(new ResourceLocation("client/fonts/SFDisplay.ttf"), 14));
+    public CFontRenderer F18 = new CFontRenderer(getFont(new ResourceLocation("client/fonts/SFDisplay.ttf"), 18));
+    public CFontRenderer F16 = new CFontRenderer(getFont(new ResourceLocation("client/fonts/SFDisplay.ttf"), 16));
 	
     private Font getFont(ResourceLocation resourceLocation, float fontSize) {
         try {

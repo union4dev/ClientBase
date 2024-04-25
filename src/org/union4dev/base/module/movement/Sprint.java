@@ -2,12 +2,24 @@ package org.union4dev.base.module.movement;
 
 import org.union4dev.base.Access;
 import org.union4dev.base.annotations.event.EventTarget;
-import org.union4dev.base.annotations.module.Disable;
-import org.union4dev.base.annotations.module.Enable;
+import org.union4dev.base.annotations.system.Disable;
+import org.union4dev.base.annotations.system.Enable;
+import org.union4dev.base.annotations.system.Module;
+import org.union4dev.base.command.CommandManager;
 import org.union4dev.base.events.update.TickEvent;
+import org.union4dev.base.module.Category;
+import org.union4dev.base.module.ModuleManager;
 import org.union4dev.base.util.ChatUtil;
+import org.union4dev.base.util.LiteInvoke;
 
+@Module(value = "Sprint",category = Category.Movement)
 public class Sprint implements Access.InstanceAccess {
+
+    private final ModuleManager moduleManager;
+
+    public Sprint(ModuleManager moduleManager) {
+        this.moduleManager = moduleManager;
+    }
 
     /**
      * Subscribe a {@link TickEvent}
@@ -15,14 +27,10 @@ public class Sprint implements Access.InstanceAccess {
      * @param event Event
      */
     @EventTarget
-    public void onUpdate(TickEvent event) {
+    public void onUpdate(TickEvent event, CommandManager commandManager) {
+        setSuffix(moduleManager.getModules().size() + " Modules and " + commandManager.getCommands().size() + " Commands!", this);
 
-        // set suffix
-        setSuffix("Normal", this);
-
-        if (!mc.thePlayer.isCollidedHorizontally && mc.thePlayer.moveForward > 0) {
-            mc.thePlayer.setSprinting(true);
-        }
+        mc.gameSettings.keyBindSprint.pressed = true;
     }
 
     /**

@@ -197,7 +197,7 @@ public final class EventManager {
 	 * @see EventTarget
 	 */
 	private static boolean isMethodBad(Method method) {
-		return method.getParameterTypes().length != 1 || !method.isAnnotationPresent(EventTarget.class);
+		return !method.isAnnotationPresent(EventTarget.class);
 	}
 
 	/**
@@ -265,9 +265,9 @@ public final class EventManager {
 	 */
 	private static void invoke(MethodData data, Event argument) {
 		try {
-			data.getTarget().invoke(data.getSource(), argument);
+			Access.getInstance().getInvoke().invokeMethod(data.getSource(),data.getTarget(),argument);
 		} catch (Throwable e) {
-
+			e.printStackTrace();
 		}
 	}
 

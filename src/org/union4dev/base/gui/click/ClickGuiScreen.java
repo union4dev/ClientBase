@@ -16,6 +16,10 @@ public class ClickGuiScreen extends GuiScreen {
     public static int color = new Color(62, 175, 255).getRGB();
 
     public ClickGuiScreen() {
+
+    }
+
+    public void init(){
         frames = new ArrayList<Frame>();
         int frameX = 5;
         for (Category category : Category.values()) {
