@@ -1,11 +1,10 @@
 package org.union4dev.base.gui.click.component.components.sub;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import org.lwjgl.opengl.GL11;
-import org.union4dev.base.Access;
 import org.union4dev.base.gui.click.component.Component;
 import org.union4dev.base.gui.click.component.components.Button;
+import org.union4dev.base.gui.font.FontManager;
 import org.union4dev.base.value.impl.ComboValue;
 
 public class ModeButton extends Component {
@@ -36,7 +35,7 @@ public class ModeButton extends Component {
         Gui.drawRect(parent.parent.getX(), parent.parent.getY() + offset, parent.parent.getX() + 2, parent.parent.getY() + offset + 12, 0xFF111111);
         GL11.glPushMatrix();
 
-        Access.getInstance().getFontManager().F18.drawStringWithShadow("Mode: " + value.getValue(), (parent.parent.getX() + 7) , (parent.parent.getY() + offset + 2)  + 1, -1);
+        FontManager.F18.drawStringWithShadow("Mode: " + value.getValue(), (parent.parent.getX() + 7) , (parent.parent.getY() + offset + 2)  + 1, -1);
         GL11.glPopMatrix();
     }
 
@@ -50,7 +49,7 @@ public class ModeButton extends Component {
     @Override
     public void mouseClicked(int mouseX, int mouseY, int button) {
         if (isMouseOnButton(mouseX, mouseY) && button == 0 && this.parent.open) {
-            //value.setMode(value.getNextMode().getName());
+            value.setValue(value.getNextValue());
         }
     }
 
