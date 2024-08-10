@@ -41,7 +41,7 @@ public class ComboValue extends AbstractValue<String> {
         int index = valuesList.indexOf(currentValue);
         if (index == -1 || index == valuesList.size() - 1) {
             // 当前值不存在或者是最后一个值，则返回第一个值作为下一个值
-            return valuesList.getFirst();
+            return valuesList.get(0);
         } else {
             // 返回下一个值
             return valuesList.get(index + 1);
