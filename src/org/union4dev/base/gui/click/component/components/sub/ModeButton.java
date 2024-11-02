@@ -36,7 +36,7 @@ public class ModeButton extends Component {
         Gui.drawRect(parent.parent.getX(), parent.parent.getY() + offset, parent.parent.getX() + 2, parent.parent.getY() + offset + 12, 0xFF111111);
         GL11.glPushMatrix();
 
-        Access.getInstance().getFontManager().F18.drawStringWithShadow("Mode: " + value.getValue(), (parent.parent.getX() + 7) , (parent.parent.getY() + offset + 2)  + 1, -1);
+        Access.getInstance().getFontManager().F18.drawStringWithShadow(String.format("%s: %s",value.getName(),value.getValue()), (parent.parent.getX() + 7) , (parent.parent.getY() + offset + 2)  + 1, -1);
         GL11.glPopMatrix();
     }
 
